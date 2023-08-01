@@ -48,6 +48,9 @@ validate_target_env() {
 build_stack() {
 	local tag=${1:-latest}
 
+	# Cleanup old jars
+	rm -rf target/*-SNAPSHOT.jar
+	docker run --rm -v $PWD:/src -w /src maven:3.8-openjdk-18-slim /bin/bash -c "mvn clean install"
 	docker build --platform=linux/amd64 -t ${IMAGE}:${tag} -f Dockerfile .
 }
 

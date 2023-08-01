@@ -25,3 +25,8 @@ replay_pid*
 
 # generated jars
 target/*
+
+.odo
+# odo generated manifests
+docker/
+kubernetes/
