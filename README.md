@@ -12,10 +12,16 @@
 - Startup local Kubernetes cluster following docs in the [**Prerequisites**]((#prerequisites))
 - `odo dev` # Launch app with hot-reloading
   - `odo logs --follow` # See logs
-  - `odo --help` # See other commands
+  - `odo -h` # See other commands
 - Test
-  - Request: `curl -s http://localhost:20001/greetings?name=foo`
-  - Response: `{"message":"Hello, foo!"}`
+  - Request
+    ```
+    curl -s http://localhost:20001/greetings?name=foo
+    ```
+  - Response
+    ```
+    {"message":"Hello, foo!"}
+    ```
 
 ## Deploy
-See `./stack --help`
+See `./stack -h`
