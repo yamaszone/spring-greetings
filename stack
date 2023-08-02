@@ -23,7 +23,7 @@ usage() {
 	printf "  \t\tSyntax: push [<tag>]\n"
 	printf "  \t\tExample: push e0daeddc1f1f39f1f305e4cc5c4db6a247d05123\n"
 	printf "\n"
-	printf "  logs\tSee logs.\n"
+	printf "  logs\t\tSee logs.\n"
 	printf "  \t\tSyntax: logs\n"
 	printf "  \t\tExample: logs\n"
 	printf "\n"
