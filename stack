@@ -15,6 +15,10 @@ usage() {
 	printf "  \t\tSyntax: build [<tag>]\n"
 	printf "  \t\tExample: build e0daeddc1f1f39f1f305e4cc5c4db6a247d05123\n"
 	printf "\n"
+	printf "  dev\t\tDevelop the service. Port defaults to 8080.\n"
+	printf "  \t\tSyntax: dev [action]\n"
+	printf "  \t\tExample: dev up\n"
+	printf "\n"
 	printf "  expose\tExpose the service. Port defaults to 8080.\n"
 	printf "  \t\tSyntax: expose [<port>]\n"
 	printf "  \t\tExample: expose\n"
@@ -29,7 +33,7 @@ usage() {
 	printf "\n"
 	printf "  up | down\tDeploy or destroy the stack. Tag defaults to 'latest'.\n"
 	printf "  \t\tSyntax: up [<tag>]\n"
-	printf "  \t\tExample: up e0daeddc1f1f39f1f305e4cc5c4db6a247d05123\n"
+	printf "  \t\tExample: up\n"
 	printf "\n"
 }
 
@@ -60,6 +64,18 @@ push_images() {
 	docker push ${IMAGE}:${tag}
 }
 
+develop() {
+	local action="$1"
+
+	validate_empty_input "$action" "Error: action (e.g. up, down) can't be empty."
+
+	if [[ "$action" == "up" ]]; then
+		tilt up
+	elif [[ "$action" == "down" ]]; then
+		tilt down
+	fi
+}
+
 deploy_or_destroy_stack() {
 	local action="$1"
 
@@ -86,6 +102,9 @@ print_logs() {
 case "$1" in
 	build)
 		build_stack "${@:2}"
+		;;
+	dev)
+		develop "${@:2}"
 		;;
 	expose)
 		expose_service "${@:2}"

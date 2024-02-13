@@ -27,8 +27,7 @@ spec:
     spec:
       containers:
       - name: greetings
-        # NOTE: don't use `latest` tag for production
-        image: airbusutm/hello-spring:latest
+        image: hello-spring:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

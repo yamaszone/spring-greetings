@@ -1,8 +1,13 @@
-FROM openjdk:19-jdk-alpine
+FROM maven:3.9-eclipse-temurin-11 as builder
 
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-COPY target/*-SNAPSHOT.jar /app/app.jar
+FROM openjdk:23-jdk-slim
+WORKDIR /app
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY --from=builder /app/target/*-SNAPSHOT.jar ./app.jar
 
+CMD ["java", "-jar", "app.jar"]
