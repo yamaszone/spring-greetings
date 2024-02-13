@@ -1,3 +1,4 @@
+# kubetpl:syntax:$
 ---
 apiVersion: v1
 kind: Service
@@ -27,8 +28,8 @@ spec:
     spec:
       containers:
       - name: greetings
-        image: hello-spring:latest
-        imagePullPolicy: Always
+        image: hello-spring:$IMAGE_TAG
+        imagePullPolicy: $IMAGE_PULL_POLICY
         ports:
         - containerPort: 8080
         resources:

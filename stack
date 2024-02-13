@@ -5,7 +5,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 DEPLOYMENT_DIR=${SCRIPT_DIR}/deployments
-IMAGE="airbusutm/hello-spring"
+IMAGE="hello-spring"
 
 usage() {
 	printf "Usage:\n"
@@ -23,17 +23,21 @@ usage() {
 	printf "  \t\tSyntax: expose [<port>]\n"
 	printf "  \t\tExample: expose\n"
 	printf "\n"
-	printf "  push\t\tPush containers to registry. Tag defaults to 'latest'\n"
-	printf "  \t\tSyntax: push [<tag>]\n"
-	printf "  \t\tExample: push e0daeddc1f1f39f1f305e4cc5c4db6a247d05123\n"
+	printf "  install\tInstall dependencies.\n"
+	printf "  \t\tSyntax: install\n"
+	printf "  \t\tExample: install\n"
 	printf "\n"
 	printf "  logs\t\tSee logs.\n"
 	printf "  \t\tSyntax: logs\n"
 	printf "  \t\tExample: logs\n"
 	printf "\n"
+	printf "  push\t\tPush containers to registry. Tag defaults to 'latest'\n"
+	printf "  \t\tSyntax: push [<tag>]\n"
+	printf "  \t\tExample: push e0daeddc1f1f39f1f305e4cc5c4db6a247d05123\n"
+	printf "\n"
 	printf "  up | down\tDeploy or destroy the stack. Tag defaults to 'latest'.\n"
 	printf "  \t\tSyntax: up [<tag>]\n"
-	printf "  \t\tExample: up\n"
+	printf "  \t\tExample: up v0.1.0\n"
 	printf "\n"
 }
 
@@ -47,6 +51,27 @@ validate_empty_input() {
 validate_target_env() {
 	local target_env="$1"
 	validate_empty_input "$target_env" "Error: target environment (allowed values: local, remote) can't be empty."
+}
+
+install_if_doesnt_exist(){
+	local tool=$1
+	local cmd=$2
+	type $tool > /dev/null 2>&1
+	if [[ "$?" == "1" ]]; then
+		printf "Installing ${tool} ...\n"
+		echo "$cmd" | /bin/bash
+	else
+		printf "${tool} is already installed.\n"
+	fi
+}
+
+install_tools() {
+	KUBECTL_VERSION=${KUBECTL_VERSION:-v1.28.4}
+	MINIKUBE_VERSION=${MINIKUBE_VERSION:-v1.31.1}
+	echo $KUBECTL_VERSION
+	install_if_doesnt_exist "kubectl" "curl -LO https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/$(uname -s | tr 'A-Z' 'a-z')/$(uname -m)/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl"
+	install_if_doesnt_exist "minikube" "curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.31.1/minikube-$(uname -s | tr 'A-Z' 'a-z')-$(uname -m) && chmod +x minikube && sudo cp minikube /usr/local/bin/ && rm minikube"
+	install_if_doesnt_exist "kubetpl" "curl -sSL https://github.com/shyiko/kubetpl/releases/download/0.9.0/kubetpl-0.9.0-$(bash -c '[[ $OSTYPE == darwin* ]] && echo darwin || echo linux')-amd64 -o kubetpl && chmod a+x kubetpl && sudo mv kubetpl /usr/local/bin/"
 }
 
 build_stack() {
@@ -78,14 +103,17 @@ develop() {
 
 deploy_or_destroy_stack() {
 	local action="$1"
+	local target_env="$2"
+	local tag=${3:-latest}
 
 	validate_empty_input "$action" "Error: action (e.g. up, down) can't be empty."
+	validate_empty_input "$target_env" "Error: target environmnet (e.g. local, dev, etc.) can't be empty."
 
 	if [[ "$action" == "up" ]]; then
-		kubectl apply -f ${DEPLOYMENT_DIR}/
+		kubetpl render ${DEPLOYMENT_DIR}/app.yaml -i ${DEPLOYMENT_DIR}/config-${target_env}.env -s IMAGE_TAG=$tag | kubectl apply -f -
 		kubectl get pods
 	elif [[ "$action" == "down" ]]; then
-		kubectl delete -f ${DEPLOYMENT_DIR}/
+		kubetpl render ${DEPLOYMENT_DIR}/app.yaml -i ${DEPLOYMENT_DIR}/config-${target_env}.env -s IMAGE_TAG=$tag | kubectl delete -f -
 	fi
 }
 
@@ -109,11 +137,14 @@ case "$1" in
 	expose)
 		expose_service "${@:2}"
 		;;
-	push)
-		push_images "${@:2}"
+	install)
+		install_tools "${@:2}"
 		;;
 	logs)
 		print_logs
+		;;
+	push)
+		push_images "${@:2}"
 		;;
 	up | down)
 		deploy_or_destroy_stack "${@:1}"
