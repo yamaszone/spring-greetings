@@ -6,17 +6,15 @@
 - Local Kubernetes cluster
   - [Docker Desktop Kubernetes](https://docs.docker.com/desktop/kubernetes/)
   - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-- [`odo` CLI](https://odo.dev/docs/overview/installation)
+- [`tilt` CLI](https://docs.tilt.dev/install)
 
 ## Develop
 - Startup local Kubernetes cluster following docs in the [**Prerequisites**]((#prerequisites))
-- `odo dev` # Launch app with hot-reloading
-  - `odo logs --follow` # See logs
-  - `odo -h` # See other commands
+- `./stack dev up` # Launch app with hot-reloading
 - Test
   - Request
     ```
-    curl -s http://localhost:20001/greetings?name=foo
+    curl -s http://localhost:8080/greetings?name=foo
     ```
   - Response
     ```
